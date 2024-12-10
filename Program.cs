@@ -7,15 +7,13 @@ namespace Library_Catalog;
 
 class Program
 {
+    private static Catalog _domyslnyKatalog;
+
     static void Main(string[] args)
     {
-        Catalog domyslnyKatalog = null;
 
         while (true)
         {
-
-            // Menu wyboru
-
             Console.WriteLine("Wybierz zadanie, które chcesz wykonać:");
             Console.WriteLine("(1) Utwórz nowy katalog biblioteczny");
             Console.WriteLine("(2) Zapisz katalog do pliku");
@@ -27,98 +25,32 @@ class Program
 
             int sekcja;
 
-            while (!int.TryParse(Console.ReadLine(), out sekcja) || sekcja < 1 || sekcja > 5)  // warunek wyboru w menu
+            while (!int.TryParse(Console.ReadLine(), out sekcja) || sekcja < 1 || sekcja > 5)  
             {
                 Console.WriteLine("Nieprawidłowy wybór. Spróbuj ponownie.");
                 Console.Write("Wybór: ");
             }
 
-            // Tworzę sekcję 1, w sekcji tej podaję wszystkie tzw. parametry które będą mi potrzebne w pozniejszych wyborach
-            // tzn. autora itd
-
             if (sekcja == 1)
             {
-                Console.Write("Podaj nazwę katalogu: ");
-                string name = Console.ReadLine();
-                domyslnyKatalog = new Catalog(name);
-
-                Console.Write("Ile książek chcesz dodać do katalogu: ");
-                int iloscKsiazek;
-                while (!int.TryParse(Console.ReadLine(), out iloscKsiazek) || iloscKsiazek < 1)  //warunek wyboru liczby =>1
-                {
-                    Console.WriteLine("Nieprawidłowa liczba. Spróbuj ponownie.");
-                    Console.Write("Ile książek chcesz dodać do katalogu: ");
-                }
-
-                for (int i = 0; i < iloscKsiazek; i++)
-                {
-                    Console.Write("Podaj tytuł książki: ");
-                    string tytul = Console.ReadLine();
-                    Console.Write("Podaj autorów książki: ");
-                    string autorzy = Console.ReadLine();
-
-                    Console.Write("Podaj liczbę stron książki (max 1000): ");
-                    int strony;
-
-                    // w tym momencie program ma odpowiedni przedział jaki jest możliwy w liczbach stron
-
-                    while (!int.TryParse(Console.ReadLine(), out strony) || strony < 1 || strony > 1000)
-                    {
-                        Console.WriteLine("Nieprawidłowa liczba stron. Spróbuj ponownie.");
-                        Console.Write("Podaj liczbę stron książki: ");
-                    }
-                    Console.Write("Podaj rok wydania książki: ");
-                    int rok;
-
-                    // tutaj również występuje przedział, co do roku wydania
-
-                    while (!int.TryParse(Console.ReadLine(), out rok) || rok < 1450 || rok > 2024)
-                    {
-                        Console.WriteLine("Nieprawidłowy rok wydania. Spróbuj ponownie.");
-                        Console.Write("Podaj rok wydania książki: ");
-                    }
-
-                    domyslnyKatalog.Books.Add(new Book(tytul, autorzy, strony, rok));
-                }
-                Console.WriteLine(); /*dodałem puste pole między menu ponownego wyboru aby
-                konsola była bardziej przejrzysta*/
+                Catalog catalogManager = new Catalog("Manager"); // Tymczasowy obiekt do wywołania metody
+                _domyslnyKatalog = catalogManager.CreateCatalog();
             }
 
             //Tworzę sekcję 2
 
             else if (sekcja == 2)
             {
-                if (domyslnyKatalog == null)
-                {
-                    Console.WriteLine("Nie ma żadnego aktywnego katalogu. Utwórz nowy katalog.");
-                }
-                else
-                {
-                    Console.Write("Podaj nazwę pliku katalogu: ");
-                    string filename = Console.ReadLine();
-                    try
-                    {
-                        using (StreamWriter writer = new StreamWriter(filename))
-                        {
-                            writer.WriteLine(domyslnyKatalog.Name);
+                // Tworzenie obiektu klasy Catalog
+                Catalog mojKatalog = new Catalog("Moja Biblioteka");
 
-                            foreach (Book book in domyslnyKatalog.Books)
-                            {
-                                writer.WriteLine(book.Tytul);
-                                writer.WriteLine(book.Autorzy);
-                                writer.WriteLine(book.Strony);
-                                writer.WriteLine(book.Rok);
-                            }
-                        }
+                // Dodanie książek do katalogu
+                mojKatalog.Books.Add(new Book("Tytuł 1", "Autor 1", 300, 2020));
+                mojKatalog.Books.Add(new Book("Tytuł 2", "Autor 2", 250, 2019));
 
-                        Console.WriteLine($"Katalog został zapisany pod nazwą {filename}.txt"); //plik zostaje zapisany jako .txt
-                    }
-                    catch (IOException)
-                    {
-                        Console.WriteLine("Wystąpił błąd podczas zapisywania pliku.");
-                    }
-                }
-                Console.WriteLine();
+                // Wywołanie metody SaveToFile na obiekcie
+                mojKatalog.SaveToFile("katalog.txt");
+
             }
 
             //Tworzę sekcję 3
@@ -133,7 +65,7 @@ class Program
                     using (StreamReader reader = new StreamReader(filename))
                     {
                         string catalogName = reader.ReadLine();
-                        domyslnyKatalog = new Catalog(catalogName);
+                        _domyslnyKatalog = new Catalog(catalogName);
 
                         string line;
                         while ((line = reader.ReadLine()) != null)
@@ -143,7 +75,7 @@ class Program
                             int pages = int.Parse(reader.ReadLine());
                             int year = int.Parse(reader.ReadLine());
 
-                            domyslnyKatalog.Books.Add(new Book(title, authors, pages, year));
+                            _domyslnyKatalog.Books.Add(new Book(title, authors, pages, year));
 
                             // Wypisuje informacje o książce
                             Console.WriteLine($"{title}, {authors}, {pages}, {year}");
@@ -161,7 +93,7 @@ class Program
 
             else if (sekcja == 4)
             {
-                if (domyslnyKatalog == null)
+                if (_domyslnyKatalog == null)
                 {
                     Console.WriteLine("Nie ma żadnego aktywnego katalogu. Utwórz nowy katalog lub odczytaj istniejący z pliku.");
                 }
@@ -170,7 +102,7 @@ class Program
                     Console.Write("Podaj tytuł szukanej książki: ");
                     string searchWord = Console.ReadLine().ToLower();
                     List<Book> foundBooks = new List<Book>();
-                    foreach (Book book in domyslnyKatalog.Books)
+                    foreach (Book book in _domyslnyKatalog.Books)
                     {
                         if (book.Tytul.ToLower().Contains(searchWord) || book.Autorzy.ToLower().Contains(searchWord))
                         {
@@ -198,8 +130,6 @@ class Program
                     Console.WriteLine();
                 }
             }
-
-            // i sekcję 5 jako koniec
 
             else if (sekcja == 5)
             {
