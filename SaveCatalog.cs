@@ -1,41 +1,37 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.IO;
 
-namespace Library_Catalog;
-
-public class SaveCatalog
+namespace Library_Catalog
 {
-    public void SaveToFile(string fileName, Catalog catalog)
+    public class SaveCatalog : IFileOperation
     {
-        if (catalog == null || catalog.Books.Count == 0)
+        public void Execute(string fileName, Catalog catalog)
         {
-            Console.WriteLine("Katalog jest pusty. Nie można zapisać.");
-            return;
-        }
-
-        try
-        {
-            using (StreamWriter writer = new StreamWriter(fileName))
+            if (catalog == null || catalog.Books.Count == 0)
             {
-                writer.WriteLine(catalog.Name);
-
-                foreach (Book book in catalog.Books)
-                {
-                    writer.WriteLine(book.Tytul);
-                    writer.WriteLine(book.Autorzy);
-                    writer.WriteLine(book.Strony);
-                    writer.WriteLine(book.Rok);
-                }
+                Console.WriteLine("Katalog jest pusty. Nie można zapisać.");
+                return;
             }
 
-            Console.WriteLine($"Katalog został zapisany pod nazwą {fileName}");
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(fileName))
+                {
+                    writer.WriteLine(catalog.Name);
+                    foreach (var book in catalog.Books)
+                    {
+                        writer.WriteLine(book.Tytul);
+                        writer.WriteLine(book.Autorzy);
+                        writer.WriteLine(book.Strony);
+                        writer.WriteLine(book.Rok);
+                    }
+                }
+                Console.WriteLine($"Katalog został zapisany pod nazwą {fileName}");
+            }
+            catch (IOException)
+            {
+                Console.WriteLine("Wystąpił błąd podczas zapisywania pliku.");
+            }
         }
-        catch (IOException)
-        {
-            Console.WriteLine("Wystąpił błąd podczas zapisywania pliku.");
-        }
-
     }
 }

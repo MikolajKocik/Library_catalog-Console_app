@@ -1,45 +1,36 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System;
+using System.IO;
 
-namespace Library_Catalog;
-
-public class ReadCatalog
+namespace Library_Catalog
 {
-    public Catalog ReadFromFile(string fileName)
+    public class ReadCatalog : IFileOperation
     {
-        Console.Write("Podaj nazwę pliku katalogu: ");
-
-        try
+        public void Execute(string fileName, Catalog catalog)
         {
-            using (StreamReader reader = new StreamReader(fileName))
+            try
             {
-                string catalogName = reader.ReadLine();
-                Catalog catalog = new Catalog(catalogName);
-
-                string line;
-
-                while ((line = reader.ReadLine()) != null)
+                using (StreamReader reader = new StreamReader(fileName))
                 {
-                    string title = line;
-                    string authors = reader.ReadLine();
-                    int pages = int.Parse(reader.ReadLine());
-                    int year = int.Parse(reader.ReadLine());
+                    string catalogName = reader.ReadLine();
+                    catalog.Name = catalogName;
 
-                    catalog.Books.Add(new Book(title, authors, pages, year));
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        string title = line;
+                        string authors = reader.ReadLine();
+                        int pages = int.Parse(reader.ReadLine());
+                        int year = int.Parse(reader.ReadLine());
 
-                    // Wypisuje informacje o książce
-                    Console.WriteLine($"{title}, {authors}, {pages}, {year}");
+                        catalog.Books.Add(new Book(title, authors, pages, year));
+                    }
                 }
                 Console.WriteLine("Katalog został odczytany.");
-                return catalog;
             }
-        }
-        catch (IOException)
-        {
-            Console.WriteLine("Nie znaleziono pliku o podanej nazwie.");
-            return null;
+            catch (IOException)
+            {
+                Console.WriteLine("Nie znaleziono pliku o podanej nazwie.");
+            }
         }
     }
 }
