@@ -2,15 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Library_Catalog;
 
-class Catalog
+public class Catalog
 {
-    private static Catalog _domyslnyKatalog;
     public string Name { get; set; }
-    public List<Book> Books { get; set; }
+    public List<Book> Books { get; set; } // lista ksiązek (klasy book) 
 
     public Catalog(string name)
     {
@@ -20,11 +18,9 @@ class Catalog
 
     public Catalog CreateCatalog()
     {
-        Catalog domyslnyKatalog = null;
-
         Console.Write("Podaj nazwę katalogu: ");
         string name = Console.ReadLine();
-        domyslnyKatalog = new Catalog(name);
+        Catalog newCatalog = new Catalog(name);
 
         Console.Write("Ile książek chcesz dodać do katalogu: ");
         int iloscKsiazek;
@@ -62,51 +58,36 @@ class Catalog
                 Console.Write("Podaj rok wydania książki: ");
             }
 
-            domyslnyKatalog.Books.Add(new Book(tytul, autorzy, strony, rok));
+            newCatalog.Books.Add(new Book(tytul, autorzy, strony, rok));
         }
-        return domyslnyKatalog;
+        return newCatalog;
     }
 
-    public void SaveToFile(string fileName)
+    public List<Book> SearchCatalog(string searchWord)
     {
-        if (_domyslnyKatalog == null)
-        {
-            Console.WriteLine("Nie ma żadnego aktywnego katalogu. Tworzę nowy katalog...");
-            _domyslnyKatalog = CreateCatalog(); // Tworzymy nowy katalog
-        }
+        var foundBooks = Books.FindAll(book =>
+        book.Tytul.Contains(searchWord, StringComparison.OrdinalIgnoreCase) ||
+        book.Autorzy.Contains(searchWord, StringComparison.OrdinalIgnoreCase));
 
-        if (string.IsNullOrEmpty(fileName))
+        if (foundBooks.Count == 0)
         {
-            Console.WriteLine("Nie podano nazwy pliku. Podaj nazwę pliku:");
-            fileName = Console.ReadLine();
+            Console.WriteLine("Nie znaleziono żadnych książek.");
         }
-
-        if (!fileName.EndsWith(".txt"))
+        else if (foundBooks.Count == 1)
         {
-            fileName += ".txt";
+            Console.WriteLine("Znaleziono 1 wynik:");
+            Console.Write($"Tytuł: {foundBooks[0].Tytul}\nAutor: {foundBooks[0].Autorzy}\nLiczba stron: {foundBooks[0].Strony}\nRok wydania: {foundBooks[0].Rok}\n");
         }
-
-        try
+        else
         {
-            using (StreamWriter writer = new StreamWriter(fileName))
+            Console.WriteLine($"Znaleziono {foundBooks.Count} wyników:");
+            foreach (Book book in foundBooks)
             {
-                writer.WriteLine(_domyslnyKatalog.Name);
-
-                foreach (Book book in _domyslnyKatalog.Books)
-                {
-                    writer.WriteLine(book.Tytul);
-                    writer.WriteLine(book.Autorzy);
-                    writer.WriteLine(book.Strony);
-                    writer.WriteLine(book.Rok);
-                }
+                Console.Write($"Tytuł: {book.Tytul}\nAutor: {book.Autorzy}\nLiczba stron: {book.Strony}\nRok wydania: {book.Rok}\n");
             }
+        }
 
-            Console.WriteLine($"Katalog został zapisany pod nazwą {fileName}.txt"); 
-        }
-        catch (IOException)
-        {
-            Console.WriteLine("Wystąpił błąd podczas zapisywania pliku.");
-        }
+        return foundBooks;
 
     }
 }
